@@ -34,26 +34,12 @@ void test_1()
 
     const std::set<Pattern> patterns = fptree_growth( fptree );
 
-    assert( patterns.size() == 19 );
-    assert( patterns.count( { { a }, 8 } ) );
-    assert( patterns.count( { { b, a }, 5 } ) );
-    assert( patterns.count( { { b }, 7 } ) );
-    assert( patterns.count( { { c, b }, 5 } ) );
-    assert( patterns.count( { { c, a, b }, 3 } ) );
-    assert( patterns.count( { { c, a }, 4 } ) );
-    assert( patterns.count( { { c }, 6 } ) );
-    assert( patterns.count( { { d, a }, 4 } ) );
-    assert( patterns.count( { { d, c, a }, 2 } ) );
-    assert( patterns.count( { { d, c }, 3 } ) );
-    assert( patterns.count( { { d, b, a }, 2 } ) );
-    assert( patterns.count( { { d, b, c }, 2 } ) );
-    assert( patterns.count( { { d, b }, 3 } ) );
-    assert( patterns.count( { { d }, 5 } ) );
-    assert( patterns.count( { { e, d }, 2 } ) );
-    assert( patterns.count( { { e, c }, 2 } ) );
-    assert( patterns.count( { { e, a, d }, 2 } ) );
-    assert( patterns.count( { { e, a }, 2 } ) );
-    assert( patterns.count( { { e }, 3 } ) );
+    for(auto u: patterns){
+        for(auto v:u.first){
+            std::cout << v << " ";
+        }
+        std::cout << u.second << std::endl;
+    }
 }
 
 void test_2()

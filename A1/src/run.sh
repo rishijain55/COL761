@@ -1,2 +1,3 @@
-g++ -o main fptree.cpp main.cpp
+rm main
+g++ -o main main.cpp
 ./main
