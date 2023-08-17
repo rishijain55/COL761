@@ -3,8 +3,16 @@
 #include <iostream>
 #include <set>
 #include <vector>
-
+#include<bits/stdc++.h>
 #include "../include/fptree.hpp"
+
+using namespace std;
+
+struct mul_comp{
+    bool operator()(const  Pattern &p1, const Pattern &p2) const{
+        return p1.first.size()*p1.second>=p2.first.size()*p2.second;
+    };
+};
 
 
 void test_1()
@@ -28,17 +36,24 @@ void test_1()
         { b, c, e }
     };
 
-    const uint64_t minimum_support_threshold = 2;
+    const uint64_t minimum_support_threshold = 1;
 
     const FPTree fptree{ transactions, minimum_support_threshold };
 
     const std::set<Pattern> patterns = fptree_growth( fptree );
+    
+    std::set<Pattern, mul_comp> patterns2;
 
-    for(auto u: patterns){
+    for(auto u:patterns){
+        patterns2.insert(u);
+    }
+
+
+    for(auto u: patterns2){
         for(auto v:u.first){
             std::cout << v << " ";
         }
-        std::cout << u.second << std::endl;
+        std::cout << u.second*u.first.size() << std::endl;
     }
 }
 
@@ -144,10 +159,72 @@ void test_3()
 
 int main(int argc, const char *argv[])
 {
-    test_1();
-    test_2();
-    test_3();
-    std::cout << "All tests passed!" << std::endl;
+    if(argc !=3){
+        std::cout << "Usage: ./main <input_file> <output_file>" << std::endl;
+        return EXIT_FAILURE;
+    }
+    const std::string input_file{ argv[1] };
+    const std::string output_file{ argv[2] };
+
+    ios_base::sync_with_stdio(false);cin.tie(NULL);cout.tie(NULL);
+    //use freopen to read input file with ios base
+    freopen(input_file.c_str(), "r", stdin);
+    freopen(output_file.c_str(), "w", stdout);
+
+    std::vector<vector<Transaction>> transactions;
+    //read each line with space separated items
+    int curind =-1;
+    std::string line;
+    int ln = 0;
+    const int maxln = 50000;
+    while(std::getline(std::cin, line)){
+        if(ln%maxln==0){
+            ln =0;
+            transactions.push_back(vector<Transaction>());
+            curind++;
+        }
+        std::istringstream iss(line);
+        std::vector<Item> items;
+        std::string item;
+        while(iss >> item){
+            items.push_back(item);
+        }
+        transactions[curind].push_back(items);
+        ln++;
+    }
+
+    for(auto u:transactions){
+        cout<<"new transaction"<<endl;
+        const uint64_t minimum_support_threshold = 100;
+        set<Pattern> patterns;
+        const FPTree fptree{ u, minimum_support_threshold };
+        patterns = fptree_growth( fptree );
+        set<Pattern, mul_comp> patterns2;
+        for(auto u:patterns){
+            patterns2.insert(u);
+        }
+        for(auto u: patterns2){
+            for(auto v:u.first){
+                std::cout << v << " ";
+            }
+            std::cout << u.second << std::endl;
+        }
+
+    }
+
+
+
+    //write to output file
+    // for(auto u:transactions){
+    //     for(auto v:u){
+    //         std::cout << v << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    
+
+
 
     return EXIT_SUCCESS;
 }
+

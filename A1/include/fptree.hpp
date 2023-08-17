@@ -1,3 +1,4 @@
+//todo: add minimum len to function of fptree_growth
 #ifndef FPTREE_HPP
 #define FPTREE_HPP
 
@@ -242,7 +243,6 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
                     conditional_fptree_transactions.push_back( transaction );
                 }
             }
-
             // build the conditional fptree relative to the current item with the transactions just generated
             const FPTree conditional_fptree( conditional_fptree_transactions, fptree.minimum_support_threshold );
             // call recursively fptree_growth on the conditional fptree (empty fptree: no patterns)
