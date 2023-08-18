@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <utility>
 
-using Item = std::string;
+using Item = uint64_t;
 using Transaction = std::vector<Item>;
 using TransformedPrefixPath = std::pair<std::vector<Item>, uint64_t>;
 using Pattern = std::pair<std::set<Item>, uint64_t>;
