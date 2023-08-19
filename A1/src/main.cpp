@@ -70,7 +70,7 @@ void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<
     for(int i =0;i<=cind;i++){
         int sz = newTransactions[i].size();
         const uint64_t minimum_support_threshold =calc(newTransactions[i]);
-        cout<<i<<" "<<minimum_support_threshold<<endl;
+        // cout<<i<<" "<<minimum_support_threshold<<endl;
         set<Pattern> patterns;
         const FPTree fptree{ newTransactions[i], minimum_support_threshold };
         patterns = fptree_growth( fptree );
@@ -92,17 +92,9 @@ void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<
     }
 }
 
-void output(vector<vector<int>> &transactions, vector<set<Item>> &mappings,map<long long, vector<int>> &replaced_transaction){
-    // cout<<"Transactions"<<endl;
-    for(auto u: transactions){
-        for(auto v:u){
-            cout << v << " ";
-        }
-        cout << endl;
-    }   
+void output(vector<vector<int>> &transactions, vector<set<Item>> &mappings,map<long long, vector<int>> &replaced_transaction, long long &num_patterns){
+    cout<<num_patterns<<endl;
 
-    cout<<endl;
-    // cout<<"Mappings"<<endl;
     for(int i =0; i<mappings.size(); i++){
         if(replaced_transaction[-i-1].size()<2){
             continue;
@@ -113,6 +105,18 @@ void output(vector<vector<int>> &transactions, vector<set<Item>> &mappings,map<l
         }
         cout << endl;
     }
+    cout<<endl;
+    
+    // cout<<"Transactions"<<endl;
+    for(auto u: transactions){
+        for(auto v:u){
+            cout << v << " ";
+        }
+        cout << endl;
+    }   
+
+    cout<<endl;
+    
 }
 
 void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>> &transactionIds,
@@ -120,7 +124,7 @@ void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>>
     // cout<<"inside search patterns"<<endl;
 
     map<long long, vector<int>> replaced_transaction;
-    vector<vector<int>> new_transactions;
+    vector<vector<int>> new_transactions(transactions.size());
     
     map<set<Item>,int> currFoundPattern;
     vector<set<Item>> patternMapping;
@@ -183,12 +187,15 @@ void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>>
             //     cout<<u<<" ";
             // }
             // cout<<endl;
-            new_transactions.push_back(new_transaction);
+            new_transactions[tid] = new_transaction;
         }
     }
 
-
+    long long num_patterns = 0;
     for(auto u : replaced_transaction){
+        if(u.second.size()>1){
+            num_patterns++;
+        }
         if(u.second.size()==1){
             vector<int> replace = new_transactions[u.second[0]];
             
@@ -209,7 +216,7 @@ void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>>
         }
     }
 
-    output(new_transactions, patternMapping, replaced_transaction);
+    output(new_transactions, patternMapping, replaced_transaction, num_patterns);
 }
 
 int main(int argc, const char *argv[])
