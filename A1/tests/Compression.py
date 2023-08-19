@@ -8,8 +8,8 @@ def count_integers(filename):
         count += len(line.split())
     return count
 
-t1 = count_integers('tests/D_medium.dat')
-t2 = count_integers('tests/D_medium_out.dat')
+t1 = count_integers('D_medium.dat')
+t2 = count_integers('D_medium_out.dat')
 print(t1)
 print(t2)
 print(t2/t1)
