@@ -31,16 +31,31 @@ int calc(vector<Transaction> &transactions){
     }
     sort(v.begin(),v.end());
     //get percentile
-    int n = (v.size()*v.size())/(v.size()+35);
+    int n = (v.size()*v.size())/(v.size()+40);
     return v[n];
 
 }
 
 void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<set<Item>>> &pattern_block, vector<vector<int>> &index_block){
+
+        vector<Transaction> pos_transactions;//remove negative for pattern generation
+        for(int i =0; i<transactions.size(); i++){
+            Transaction t;
+            for(auto u: transactions[i]){
+                if(u>=0){
+                    t.push_back(u);
+                }
+            }
+            if(t.size()==0) t.push_back(0);
+            // if(t.size()>0){
+                pos_transactions.push_back(t);
+            // }
+        }
+
     vector<pair<int,int>> indices;
-    int n = transactions.size();
+    int n = pos_transactions.size();
     for(int i =0; i<n; i++){
-        indices.push_back({transactions[i].size(),i});
+        indices.push_back({pos_transactions[i].size(),i});
     }
 
     sort(indices.begin(), indices.end(), greater<pair<int,int>>());
@@ -53,7 +68,8 @@ void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<
             cind++;
             newTransactions.push_back(vector<Transaction>());
         }
-        newTransactions[cind].push_back(transactions[indices[i].second]);
+        // if(pos_transactions[indices[i].second].size()>0)
+        newTransactions[cind].push_back(pos_transactions[indices[i].second]);
 
     }
     //put index into index block
@@ -98,7 +114,7 @@ void output_mappings(vector<set<Item>> &mappings, map<long long, vector<int>> &r
         if(replaced_transaction[-i-1].size()<2){
             continue;
         }
-        cout<<-i-1+counter<<" ";
+        cout<<-i+counter<<" ";
         for(auto v : mappings[i]){
             cout << v << " ";
         }
@@ -126,9 +142,8 @@ void output_transactions(vector<Transaction> &transactions){
 void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>> &transactionIds,
                     vector<Transaction> &transactions, vector<Transaction> &new_transactions, map<long long, vector<int>> &replaced_transaction, vector<set<Item>> &patternMapping, long long & counter){
     // cout<<"inside search patterns"<<endl;
-
     new_transactions.resize(transactions.size());
-    
+    long long init_counter = counter;
     map<set<Item>,int> currFoundPattern;
     
     int num_blocks = patternsFound.size();
@@ -166,11 +181,11 @@ void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>>
                     }
 
                     mp[assigned_id]++;
-
-                    if(replaced_transaction[assigned_id].size()<2){
+                    long long rid = assigned_id-init_counter-1;
+                    if(replaced_transaction[rid].size()<2){
                         int transaction_id = (tid);
-                        // cout<<-assigned_id<<endl;
-                        replaced_transaction[assigned_id].push_back(transaction_id);
+                        // cout<<-rid<<endl;
+                        replaced_transaction[rid].push_back(transaction_id);
                     }
                 }
 
@@ -202,7 +217,7 @@ void searchPatterns(vector<vector<set<Item>>> &patternsFound,vector<vector<int>>
             
             for(int i =0; i<replace.size(); i++){
                 int t_id = replace[i];
-                if(t_id==u.first){
+                if(t_id==u.first+init_counter+1){
                     swap(replace[i], replace[replace.size()-1]);
                     break;
                 }
@@ -247,7 +262,7 @@ int main(int argc, const char *argv[])
     }
     //get patterns
     long long count = -1;
-    int part_len = 1000;
+    int part_len = 500;
     vector<vector<set<Item>>> pattern_block;
     vector<vector<int>> index_block;
     get_patterns(transactions, part_len, pattern_block, index_block);
@@ -255,41 +270,48 @@ int main(int argc, const char *argv[])
     vector<Transaction> new_transactions;
     map<long long, vector<int>> replaced_transaction;
     vector<set<Item>> patternMapping;
-    long long count_sum = 0;
+    long long prev_counter = count;
+
     searchPatterns(pattern_block, index_block, transactions, new_transactions, replaced_transaction, patternMapping, count);
-    output_mappings(patternMapping, replaced_transaction);
-    count_sum += count;
+    // cout<<"Counter: "<<count<<endl;
+    output_mappings(patternMapping, replaced_transaction, prev_counter);
+    prev_counter = count;
+    // output_transactions(new_transactions);
+    // count_sum += count;
     //second iteration
     // output(new_transactions, patternMapping, replaced_transaction);
     transactions.clear();
     int num_iter =10;
     while(num_iter--){
-        vector<Transaction> pos_transactions;//remove negative for pattern generation
-        for(int i =0; i<new_transactions.size(); i++){
-            Transaction t;
-            for(auto u: new_transactions[i]){
-                if(u>=0){
-                    t.push_back(u);
-                }
-            }
-            if(t.size()>0){
-                pos_transactions.push_back(t);
-            }
-        }
+        // vector<Transaction> pos_transactions;//remove negative for pattern generation
+        // for(int i =0; i<new_transactions.size(); i++){
+        //     Transaction t;
+        //     for(auto u: new_transactions[i]){
+        //         if(u>=0){
+        //             t.push_back(u);
+        //         }
+        //     }
+        //     if(t.size()>0){
+        //         pos_transactions.push_back(t);
+        //     }
+        // }
         vector<vector<set<Item>>> pattern_block2;
         vector<vector<int>> index_block2;
-        get_patterns(pos_transactions, part_len, pattern_block2, index_block2);
+        get_patterns(new_transactions, part_len, pattern_block2, index_block2);
         vector<Transaction> new_transactions3;
         map<long long, vector<int>> replaced_transaction2;
         vector<set<Item>> patternMapping2;
-        count = -1;
+        // count = -1;
         searchPatterns(pattern_block2, index_block2, new_transactions, new_transactions3, replaced_transaction2, patternMapping2, count);
-        output_mappings(patternMapping2, replaced_transaction2, count_sum);
-        count_sum += (count+1);
+        // cout<<"Counter: "<<count<<endl;
+        // cout<<"Mapping no: "<<num_iter<<endl;
+        output_mappings(patternMapping2, replaced_transaction2, prev_counter);
+        prev_counter = count;
+        // output_transactions(new_transactions3);
+        // count_sum += (count+1);
         new_transactions = new_transactions3;
     }
     output_transactions(new_transactions);
 
     return EXIT_SUCCESS;
 }
-
