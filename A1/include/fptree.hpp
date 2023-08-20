@@ -1,4 +1,4 @@
-//todo: add minimum len to function of fptree_growth
+//todo: add minimum len to function of fptree_growth_time
 #ifndef FPTREE_HPP
 #define FPTREE_HPP
 
@@ -13,11 +13,13 @@
 #include <cassert>
 #include <cstdint>
 #include <utility>
+#include <chrono>
 
 using Item = int;
 using Transaction = std::vector<Item>;
 using TransformedPrefixPath = std::pair<std::vector<Item>, uint64_t>;
 using Pattern = std::pair<std::set<Item>, uint64_t>;
+#define Timepoint std::chrono::high_resolution_clock::time_point
 
 
 struct FPNode {
@@ -40,8 +42,9 @@ struct FPTree {
     bool empty() const;
 };
 
+std::pair<std::set<Pattern>,bool> fptree_growth(const FPTree&);
 
-std::set<Pattern> fptree_growth(const FPTree&);
+std::set<Pattern> fptree_growth_time(const FPTree&, Timepoint);
 
 
 FPNode::FPNode(const Item& item, const std::shared_ptr<FPNode>& parent) :
@@ -149,8 +152,29 @@ bool contains_single_path(const FPTree& fptree)
     return fptree.empty() || contains_single_path( fptree.root );
 }
 
-std::set<Pattern> fptree_growth(const FPTree& fptree)
+std::pair<std::set<Pattern>,bool> fptree_growth(const FPTree& fptree){
+    Timepoint start = std::chrono::high_resolution_clock::now();
+    
+    std::set<Pattern> st = fptree_growth_time(fptree, start);
+    Timepoint end = std::chrono::high_resolution_clock::now();
+    if(std::chrono::duration_cast<std::chrono::seconds>(end - start).count() > 1){
+        return {{},false};
+    }
+    else{
+        return {st,true};
+    }
+
+}
+
+std::set<Pattern> fptree_growth_time(const FPTree& fptree, Timepoint Tim) // bound the time of running algo
 {
+    Timepoint curr = std::chrono::high_resolution_clock::now();
+
+    if(std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1){
+        return {};
+    }
+
+
     if ( fptree.empty() ) { return {}; }
 
     if ( contains_single_path( fptree ) ) {
@@ -162,6 +186,13 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
         assert( fptree.root->children.size() == 1 );
         auto curr_fpnode = fptree.root->children.front();
         while ( curr_fpnode ) {
+
+            curr = std::chrono::high_resolution_clock::now();
+            if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                return {};
+            }
+
+
             const Item& curr_fpnode_item = curr_fpnode->item;
             const uint64_t curr_fpnode_frequency = curr_fpnode->frequency;
 
@@ -171,6 +202,12 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
 
             // create a new pattern by adding the item of the current node to each pattern generated until now
             for ( const Pattern& pattern : single_path_patterns ) {
+
+                curr = std::chrono::high_resolution_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                    return {};
+                }
+
                 Pattern new_pattern{ pattern };
                 new_pattern.first.insert( curr_fpnode_item );
                 assert( curr_fpnode_frequency <= pattern.second );
@@ -194,6 +231,12 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
 
         // for each item in the fptree
         for ( const auto& pair : fptree.header_table ) {
+
+            curr = std::chrono::high_resolution_clock::now();
+            if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                return {};
+            }
+
             const Item& curr_item = pair.first;
 
             // build the conditional fptree relative to the current item
@@ -205,7 +248,10 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
             auto path_starting_fpnode = pair.second;
             while ( path_starting_fpnode ) {
                 // construct the transformed prefix path
-
+                curr = std::chrono::high_resolution_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                    return {};
+                }
                 // each item in th transformed prefix path has the same frequency (the frequency of path_starting_fpnode)
                 const uint64_t path_starting_fpnode_frequency = path_starting_fpnode->frequency;
 
@@ -216,6 +262,11 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
                     TransformedPrefixPath transformed_prefix_path{ {}, path_starting_fpnode_frequency };
 
                     while ( curr_path_fpnode->parent.lock() ) {
+                        curr = std::chrono::high_resolution_clock::now();
+                        if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                            return {};
+                        }
+
                         assert( curr_path_fpnode->frequency >= path_starting_fpnode_frequency );
                         transformed_prefix_path.first.push_back( curr_path_fpnode->item );
 
@@ -233,6 +284,10 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
             // generate the transactions that represent the conditional pattern base
             std::vector<Transaction> conditional_fptree_transactions;
             for ( const TransformedPrefixPath& transformed_prefix_path : conditional_pattern_base ) {
+                curr = std::chrono::high_resolution_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                    return {};
+                }
                 const std::vector<Item>& transformed_prefix_path_items = transformed_prefix_path.first;
                 const uint64_t transformed_prefix_path_items_frequency = transformed_prefix_path.second;
 
@@ -245,8 +300,8 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
             }
             // build the conditional fptree relative to the current item with the transactions just generated
             const FPTree conditional_fptree( conditional_fptree_transactions, fptree.minimum_support_threshold );
-            // call recursively fptree_growth on the conditional fptree (empty fptree: no patterns)
-            std::set<Pattern> conditional_patterns = fptree_growth( conditional_fptree );
+            // call recursively fptree_growth_time on the conditional fptree (empty fptree: no patterns)
+            std::set<Pattern> conditional_patterns = fptree_growth_time( conditional_fptree, Tim);
 
             // construct patterns relative to the current item using both the current item and the conditional patterns
             std::set<Pattern> curr_item_patterns;
@@ -256,6 +311,11 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
             uint64_t curr_item_frequency = 0;
             auto fpnode = pair.second;
             while ( fpnode ) {
+                curr = std::chrono::high_resolution_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                    return {};
+                }
+
                 curr_item_frequency += fpnode->frequency;
                 fpnode = fpnode->node_link;
             }
@@ -265,6 +325,10 @@ std::set<Pattern> fptree_growth(const FPTree& fptree)
 
             // the next patterns are generated by adding the current item to each conditional pattern
             for ( const Pattern& pattern : conditional_patterns ) {
+                curr = std::chrono::high_resolution_clock::now();
+                if (std::chrono::duration_cast<std::chrono::seconds>(curr - Tim).count() > 1) {
+                    return {};
+                }
                 Pattern new_pattern{ pattern };
                 new_pattern.first.insert( curr_item );
                 assert( curr_item_frequency >= pattern.second );

@@ -20,20 +20,24 @@ partition the data set into blocks and get patterns for each block. Store the tr
 
 int calc(vector<Transaction> &transactions){
     map<int,int> mp;
+    int maxf =0;
     for(auto & u: transactions){
         for(auto v:u){
             mp[v]++;
+            maxf = max(maxf,mp[v]);
         }
     }
-    vector<int> v(mp.size());
-    int ind =0;
-    for( auto & u: mp){
-        v[ind++] = u.second;
+    return maxf;
+
+}
+
+
+int avg_size(vector<Transaction> &transactions){
+    int sum =0;
+    for(auto &u: transactions){
+        sum+=u.size();
     }
-    sort(v.begin(),v.end());
-    //get percentile
-    int n = (v.size()*v.size())/(v.size()+35);
-    return v[n];
+    return sum/transactions.size();
 }
 
 int pair_calc(vector<Transaction> &transactions){
@@ -68,7 +72,7 @@ int pair_calc(vector<Transaction> &transactions){
     // cout<<endl;
     int n = (v.size()*v.size())/(v.size()+35);
     return v[n];
-
+ 
 }
 
 void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<set<Item>>> &pattern_block, vector<vector<int>> &index_block){
@@ -118,17 +122,32 @@ void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<
     pattern_block.resize(cind+1);
     for(int i =0;i<=cind;i++){
         int sz = newTransactions[i].size();
-        const uint64_t minimum_support_threshold =(pair_calc(newTransactions[i])+ calc(newTransactions[i]))/2;
-        cout<<i<<" "<<minimum_support_threshold<<endl;
+        int msn =calc(newTransactions[i]);
+        int msi = msn;
         set<Pattern> patterns;
-        const FPTree fptree{ newTransactions[i], minimum_support_threshold };
-        patterns = fptree_growth( fptree );
+        int prev_len =0;
+        while(patterns.size()<=150 && msn>=1){
+            const FPTree fptree{ newTransactions[i], msn};
+            pair<set<Pattern>, bool> patterns_bool = fptree_growth( fptree );
+            if(patterns_bool.second==false){
+                break;
+            }
+            patterns = patterns_bool.first;
+            if(msn<=10){
+                msn-=1;
+            }
+            else{
+                msn-=10;
+            }
+        }
+        
+        // cout<<i<<" "<<patterns.size()<<": "<<msn<<" and "<<msi<<endl;
         set<Pattern, mul_comp> patterns2;
         for(auto u:patterns){
             patterns2.insert(u);
         }
         int pat_sz = patterns2.size();
-        pat_sz = min(pat_sz,part_len*10);
+        pat_sz = min(pat_sz,part_len);
         int j =0;
         for(auto u:patterns2){
             if(u.first.size()>1){
@@ -305,7 +324,7 @@ int main(int argc, const char *argv[])
     }
     //get patterns
     long long count = -1;
-    int part_len = 500;
+    int part_len = 1000;
     vector<vector<set<Item>>> pattern_block;
     vector<vector<int>> index_block;
     get_patterns(transactions, part_len, pattern_block, index_block);
@@ -317,10 +336,13 @@ int main(int argc, const char *argv[])
 
     searchPatterns(pattern_block, index_block, transactions, new_transactions, replaced_transaction, patternMapping, count);
     output_mappings(patternMapping, replaced_transaction, prev_counter);
+    
     prev_counter = count;
-
+    pattern_block.clear();
+    index_block.clear();
     transactions.clear();
-    int num_iter =10;
+    replaced_transaction.clear();
+    int num_iter =1;
     while(num_iter--){
         vector<vector<set<Item>>> pattern_block2;
         vector<vector<int>> index_block2;
@@ -330,9 +352,12 @@ int main(int argc, const char *argv[])
         vector<set<Item>> patternMapping2;
         searchPatterns(pattern_block2, index_block2, new_transactions, new_transactions3, replaced_transaction2, patternMapping2, count);
         output_mappings(patternMapping2, replaced_transaction2, prev_counter);
+
         prev_counter = count;
-;
         new_transactions = new_transactions3;
+        if(patternMapping2.size()==0){
+            break;
+        }
     }
     output_transactions(new_transactions);
 

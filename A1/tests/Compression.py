@@ -8,7 +8,7 @@ def count_integers(filename):
         count += len(line.split())
     return count
 
-t1 = count_integers('D_small.dat')
+t1 = count_integers('D_medium2.dat')
 t2 = count_integers('D_medium_out.dat')
 print(t1)
 print(t2)
