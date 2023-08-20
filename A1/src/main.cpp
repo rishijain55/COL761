@@ -20,17 +20,52 @@ partition the data set into blocks and get patterns for each block. Store the tr
 
 int calc(vector<Transaction> &transactions){
     map<int,int> mp;
-    for(auto u: transactions){
+    for(auto & u: transactions){
         for(auto v:u){
             mp[v]++;
         }
     }
-    vector<int> v;
-    for( auto u: mp){
-        v.push_back(u.second);
+    vector<int> v(mp.size());
+    int ind =0;
+    for( auto & u: mp){
+        v[ind++] = u.second;
     }
     sort(v.begin(),v.end());
     //get percentile
+    int n = (v.size()*v.size())/(v.size()+35);
+    return v[n];
+}
+
+int pair_calc(vector<Transaction> &transactions){
+    //calculate frequency of each pair
+    map<pair<int,int>,int> mp;
+    for(auto &u: transactions){
+        for(int i =0; i<u.size(); i++){
+            for(int j =i+1; j<u.size(); j++){
+                mp[{u[i],u[j]}]++;
+            }
+        }
+    }
+    vector<int> v(mp.size());
+    long long sum =0;
+    int ind =0;
+    for( auto u: mp){
+        v[ind++] = u.second;
+        sum+=u.second;
+    }
+    sort(v.begin(),v.end());
+    if(v.size()==0){
+        // cout<<"size reached"<<endl;
+        return 100000;
+    }
+    //get percentile
+    vector<int> pc(10);
+    for(int i =5; i<=95; i+=10){
+        int n = (v.size()*i)/100;
+        pc[i/10] = v[n];
+        // cout<<v[n]<<" "<<endl;
+    }
+    // cout<<endl;
     int n = (v.size()*v.size())/(v.size()+35);
     return v[n];
 
@@ -83,8 +118,8 @@ void get_patterns(vector<Transaction> &transactions,int part_len, vector<vector<
     pattern_block.resize(cind+1);
     for(int i =0;i<=cind;i++){
         int sz = newTransactions[i].size();
-        const uint64_t minimum_support_threshold =calc(newTransactions[i]);
-        // cout<<i<<" "<<minimum_support_threshold<<endl;
+        const uint64_t minimum_support_threshold =(pair_calc(newTransactions[i])+ calc(newTransactions[i]))/2;
+        cout<<i<<" "<<minimum_support_threshold<<endl;
         set<Pattern> patterns;
         const FPTree fptree{ newTransactions[i], minimum_support_threshold };
         patterns = fptree_growth( fptree );
