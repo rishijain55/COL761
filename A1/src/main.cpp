@@ -5,6 +5,7 @@
 #include <vector>
 #include<bits/stdc++.h>
 #include "../include/fptree.hpp"
+#include <chrono>
 
 using namespace std;
 
@@ -324,7 +325,8 @@ int main(int argc, const char *argv[])
     }
     //get patterns
     long long count = -1;
-    int part_len = 1000;
+    int part_len = 500;
+    auto start = chrono::high_resolution_clock::now();
     vector<vector<set<Item>>> pattern_block;
     vector<vector<int>> index_block;
     get_patterns(transactions, part_len, pattern_block, index_block);
@@ -336,13 +338,23 @@ int main(int argc, const char *argv[])
 
     searchPatterns(pattern_block, index_block, transactions, new_transactions, replaced_transaction, patternMapping, count);
     output_mappings(patternMapping, replaced_transaction, prev_counter);
+    auto stop_first = chrono::high_resolution_clock::now();
+    auto duration_first = chrono::duration_cast<chrono::seconds>(stop_first - start);
     
     prev_counter = count;
     pattern_block.clear();
     index_block.clear();
     transactions.clear();
     replaced_transaction.clear();
-    int num_iter =1;
+    int num_iter =0;
+    //compare duation_first with 60 seconds
+    if(duration_first.count()<=180){
+        num_iter = 5;
+    }
+    else if(duration_first.count()<=600) num_iter=2;
+    else if(duration_first.count()<=1200) num_iter=1;
+    else num_iter = 0;
+
     while(num_iter--){
         vector<vector<set<Item>>> pattern_block2;
         vector<vector<int>> index_block2;
