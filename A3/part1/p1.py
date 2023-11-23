@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+#set precision to 5 decimal places
+np.set_printoptions(precision=5)
+
 # Function to generate a dataset of random points in d-dimensional space
 def generate_dataset(num_points, d):
     return np.random.uniform(0, 1, size=(num_points, d))
@@ -49,10 +52,13 @@ for d in dimensions:
     avg_ratios_linf.append(avg_ratio[2])
     print(f'Average ratio of farthest to nearest distances for d={d}: {avg_ratio}')
 
+
 # Plot the average ratios
 plt.plot(dimensions, avg_ratios_l1, label='L1 Norm')
 plt.plot(dimensions, avg_ratios_l2, label='L2 Norm')
 plt.plot(dimensions, avg_ratios_linf, label='L∞ Norm')
+#use log scale for y-axis
+plt.yscale('log')
 plt.xlabel('Number of Dimensions (d)')
 plt.ylabel('Average Ratio of Farthest to Nearest Distances')
 plt.title('Behavior of Uniformly Distributed Points in High-Dimensional Spaces')
