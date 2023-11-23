@@ -18,8 +18,8 @@ def calculate_avg_ratio(farthest_distances, nearest_distances):
 
 
 # Main code
-dimensions = [1, 2, 4]
-num_points = 1000
+dimensions = [1, 2, 4, 8, 16, 32, 64]
+num_points = 1000000
 num_queries = 100
 
 avg_ratios_l1 = []
