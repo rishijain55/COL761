@@ -104,6 +104,7 @@ if __name__ == '__main__':
     train_dataset_path = os.path.abspath(os.path.join(cur_file_path, '..', '..', '..','dataset', 'dataset_2','train'))
     print("train_dataset_path is", train_dataset_path)
     dataset = MyDataset(root=train_dataset_path)
+    print(type(dataset))
     #shuffle
     # dataset = [graph for graph in dataset if graph.y.item() in [0, 1]]
     #loop over the dataset and print the labels
