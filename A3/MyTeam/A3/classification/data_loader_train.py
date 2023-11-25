@@ -34,6 +34,9 @@ class MyDataset(Dataset):
         for i in range(1, len(self.num_edges)):
             self.edge_features_start.loc[i] = self.edge_features_start.loc[i-1] + self.num_edges.iloc[i-1, 0]
 
+        last_index = len(self.graph_labels) 
+
+
         valid_indices = ~self.graph_labels.iloc[:, 0].isna()
         self.graph_labels = self.graph_labels[valid_indices]
         self.num_nodes = self.num_nodes[valid_indices]
@@ -41,6 +44,26 @@ class MyDataset(Dataset):
         self.node_features_start = self.node_features_start[valid_indices]
         self.edge_features_start = self.edge_features_start[valid_indices]
 
+        count0 = self.graph_labels[self.graph_labels[0] == 0].count().iloc[0]
+        count1 = self.graph_labels[self.graph_labels[0] == 1].count().iloc[0]
+        minclass = 0
+        mincount = count0
+        if count0 > count1:
+            minclass = 1
+            mincount = count1
+        majcount = max(count0, count1)
+        #oversample the minority class
+        cur_ind = 0
+        while mincount < majcount:
+            if self.graph_labels.iloc[cur_ind, 0] == minclass:
+                self.graph_labels.loc[last_index] = self.graph_labels.iloc[cur_ind]
+                self.num_nodes.loc[last_index] = self.num_nodes.iloc[cur_ind]
+                self.num_edges.loc[last_index] = self.num_edges.iloc[cur_ind]
+                self.node_features_start.loc[last_index] = self.node_features_start.iloc[cur_ind]
+                self.edge_features_start.loc[last_index] = self.edge_features_start.iloc[cur_ind]
+                mincount += 1
+                last_index += 1
+            cur_ind += 1
 
     def len(self):
         return len(self.graph_labels)
@@ -54,7 +77,6 @@ class MyDataset(Dataset):
         labelo[0] = label
         label = labelo
 
-        #encode the label into one-hot vector
 
         num_nodes = self.num_nodes.iloc[idx, 0]
         num_edges = self.num_edges.iloc[idx, 0]
@@ -82,17 +104,16 @@ if __name__ == '__main__':
     train_dataset_path = os.path.abspath(os.path.join(cur_file_path, '..', '..', '..','dataset', 'dataset_2','train'))
     print("train_dataset_path is", train_dataset_path)
     dataset = MyDataset(root=train_dataset_path)
+    #shuffle
     # dataset = [graph for graph in dataset if graph.y.item() in [0, 1]]
     #loop over the dataset and print the labels
+    print(len(dataset))
     print("graph num labels are", dataset.num_classes)
     print("graph num features are", dataset.num_node_features)
+
     # print("edge num features are", dataset.num_edge_features)
     # for i in range(len(dataset)):
     #     data = dataset[i]
     #     print(data.edge_index)
 
     # print("dataset length is", len(dataset))
-
-    test_path = "/home/slowblow/sem7/col761/ass-git/A3/dataset/dataset_2/valid"
-    test_dataset =  MyDataset(root=test_path)
-    test_loader = 
