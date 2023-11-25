@@ -1,7 +1,7 @@
 #use networkx to visualize the graph
 
 import networkx as nx
-from data_loader import MyDataset
+from A3.MyTeam.A3.classification.data_loader_train import MyDataset
 import matplotlib.pyplot as plt
 import os
 from torch_geometric.data import Data, Dataset, DataLoader
