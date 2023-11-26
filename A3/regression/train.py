@@ -225,7 +225,7 @@ def train(dataset, val_dataset):
         total_loss /= len(train_loader.dataset)
         training_losses.append(total_loss)
 
-        if epoch % 10 == 0:
+        if epoch % 1 == 0:
             val_loss = test(val_loader, model)
             print("Epoch {}. Training Loss: {:.4f}. Validation Loss: {:.4f}".format(
                 epoch, total_loss, val_loss))
