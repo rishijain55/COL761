@@ -1,0 +1,1 @@
+python train.py --model_path="/home/slowblow/sem7/col761/ass-git/A3/MyTeam/A3/regression" --dataset_path="/home/slowblow/sem7/col761/ass-git/A3/dataset/dataset_1/train" --val_dataset_path="/home/slowblow/sem7/col761/ass-git/A3/dataset/dataset_1/valid"
