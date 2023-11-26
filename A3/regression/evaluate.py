@@ -202,7 +202,7 @@ def main():
     num_classes = 1
     num_node_features = dataset.num_node_features
     num_edge_features = dataset.num_edge_features
-    hidden_layers = (num_node_features+num_edge_features)*5
+    hidden_layers = (num_node_features+num_edge_features)*6
 
     print("num_node_features", num_node_features, "num_edge_features", num_edge_features, "hidden_layers", hidden_layers)
 

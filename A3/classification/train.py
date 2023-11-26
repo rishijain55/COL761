@@ -227,7 +227,7 @@ def train(dataset, val_dataset):
     edge_features_dim = dataset.num_edge_features
     num_node_features = dataset.num_node_features
     num_classes = dataset.num_classes
-    hid_size = (num_node_features + edge_features_dim) * 2
+    hid_size = (num_node_features + edge_features_dim) * 4
     model = GNNStack(num_node_features, hid_size, num_classes, edge_dim=edge_features_dim)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = model.to(device)

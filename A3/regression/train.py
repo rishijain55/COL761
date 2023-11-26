@@ -194,7 +194,7 @@ def train(dataset, val_dataset):
     # Build model
     num_features = dataset.num_node_features
     num_edge_features = dataset.num_edge_features
-    hid_dim = (num_features + num_edge_features) * 5
+    hid_dim = (num_features + num_edge_features) * 6
 
     model = GraphNeuralNetwork(num_features, hid_dim, 1, edge_dims=num_edge_features)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
