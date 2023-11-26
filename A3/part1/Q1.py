@@ -63,7 +63,7 @@ plt.xlabel('Number of Dimensions (d)')
 plt.ylabel('Average Ratio of Farthest to Nearest Distances')
 plt.title('Behavior of Uniformly Distributed Points in High-Dimensional Spaces')
 plt.legend()
-plt.savefig('./p1.png')
+plt.savefig('./Q1.png')
 
 
 
