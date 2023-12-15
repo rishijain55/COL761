@@ -1,7 +1,7 @@
 if [ "$1" = "C" ]; then
-    ./main $2 $3
+    ./src/main $2 $3
 fi
 
 if [ "$1" = "D" ]; then
-    ./decompressor $2 $3
+    ./src/decompressor $2 $3
 fi

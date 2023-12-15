@@ -1,0 +1,1 @@
+python3 Clustering.py $1 $2 $3
