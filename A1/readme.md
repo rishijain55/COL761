@@ -20,7 +20,15 @@ After finding the optimal threshold support, the transactions are sorted and div
 
 ## Running Instructions
 
-### Compression
+Clone the repository and navigate to the directory.
+Compile the code using the following command:
+
+```bash
+$ bash compile.sh
+```
+
+### Compression 
+
 To compress a dataset, use the following command:
 
 ```bash
